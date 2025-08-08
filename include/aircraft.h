@@ -5,35 +5,25 @@
 #ifndef EVOTL_SIM_AIRCRAFT_H
 #define EVOTL_SIM_AIRCRAFT_H
 
-class Aircraft {
+#include "aircraftType.hpp"
+class aircraft {
 public:
-    Aircraft(const float cruiseSpeed, const float batteryCapacity, const float timeToCharge,
-        const float energyUsage, const int passengerCount, const float faultProbability) {
-        this->cruiseSpeed = cruiseSpeed;
-        this->batteryCapacity = batteryCapacity;
-        this->timeToCharge = timeToCharge;
-        this->energyUsage = energyUsage;
-        this->passengerCount = passengerCount;
-        this->faultProbability = faultProbability;
+    aircraft(const aircraftType& specification) {
+       type = specification;
     }
-    ~Aircraft();
+    ~aircraft() = default;
 
-    float getCruiseSpeed() const { return cruiseSpeed; }
-    float getBatteryCapacity() const { return batteryCapacity; }
-    float getTimeToCharge() const { return timeToCharge; }
-    float getEnergyUsage() const { return energyUsage; }
-    int getPassengerCount() const { return passengerCount; }
-    float getFaultProbability() const { return faultProbability; }
+    aircraftType getType() const {return type;}
 
-    //not writing setters because assuming can't change the characters of the aircraft after you create it
 
 private:
-    float cruiseSpeed;
-    float batteryCapacity;
-    float timeToCharge;
-    float energyUsage;
-    int passengerCount;
-    float faultProbability;
+    aircraftType type{};
+
+    double totalFlightTime{};
+    double totalDistanceTravelled{};
+    double timeSpentCharging{};
+    double totalNumFaults{};
+    double totalPassengerMiles{};
 
 };
 

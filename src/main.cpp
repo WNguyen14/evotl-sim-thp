@@ -4,9 +4,9 @@
 int main() {
     std::cout << "Hello, evotl sim!!" << std::endl;
 
-    evotlSim sim;
+    evotlSim sim(std::time(nullptr));
 
-    sim.showAircraftTypes();
+    //sim.showAircraftTypes();
     // Additional logic can be added here
     return 0;
 }

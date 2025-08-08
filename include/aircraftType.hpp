@@ -8,8 +8,11 @@
 #include <sstream>
 class aircraftType {
 public:
-    aircraftType(std::string name, const float cruiseSpeed, const float batteryCapacity, const float timeToCharge,
-        const float energyUsage, const int passengerCount, const float faultProbability) {
+
+    aircraftType() = default;
+
+    aircraftType(std::string name, const double cruiseSpeed, const double batteryCapacity, const double timeToCharge,
+        const double energyUsage, const int passengerCount, const double faultProbability) {
         this->name = name;
         this->cruiseSpeed = cruiseSpeed;
         this->batteryCapacity = batteryCapacity;
@@ -19,13 +22,15 @@ public:
         this->faultProbability = faultProbability;
     };
 
+
+
     std::string getName() const {return name;}
-    float getCruiseSpeed() const { return cruiseSpeed; }
-    float getBatteryCapacity() const { return batteryCapacity; }
-    float getTimeToCharge() const { return timeToCharge; }
-    float getEnergyUsage() const { return energyUsage; }
+    double getCruiseSpeed() const { return cruiseSpeed; }
+    double getBatteryCapacity() const { return batteryCapacity; }
+    double getTimeToCharge() const { return timeToCharge; }
+    double getEnergyUsage() const { return energyUsage; }
     int getPassengerCount() const { return passengerCount; }
-    float getFaultProbability() const { return faultProbability; }
+    double getFaultProbability() const { return faultProbability; }
 
     std::string toString() const {
         std::ostringstream oss;
@@ -40,13 +45,15 @@ public:
     }
 
 private:
-    std::string name;
-    float cruiseSpeed;
-    float batteryCapacity;
-    float timeToCharge;
-    float energyUsage;
-    int passengerCount;
-    float faultProbability;
+    std::string name{"NOT INITIALIZED"};
+
+    //TODO maybe make a null type
+    double cruiseSpeed{};
+    double batteryCapacity{};
+    double timeToCharge{};
+    double energyUsage{};
+    int passengerCount{};
+    double faultProbability{};
 };
 
 #endif //EVOTL_SIM_AIRCRAFTTYPE_H
