@@ -1,14 +1,26 @@
 #ifndef EVOTLSIM_H
 #define EVOTLSIM_H
 
-// Function prototypes
-void exampleFunction();
+#include "aircraft.h"
+#include "aircraftType.hpp"
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <iostream>
 
 // Class declarations
-class ExampleClass {
+class evotlSim {
+
 public:
-    ExampleClass();
-    void exampleMethod();
+    evotlSim();
+
+    void showAircraftTypes() const;
+private:
+
+    void initTypesFromCsv(const std::string& fileName);
+
+    std::vector<aircraftType> aircraftTypes;
 };
 
-#endif // evotl-sim_H
+#endif // EVOTLSIM_H
