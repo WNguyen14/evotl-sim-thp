@@ -31,7 +31,7 @@ struct stats {
 
 class statisticsRecorder {
 public:
-    explicit statisticsRecorder(const std::vector<aircraftType>& types);
+    explicit statisticsRecorder(const std::vector<aircraftType>* types);
 
     void recordFlight(const aircraftType& type, double distance, double duration);
 

@@ -32,6 +32,8 @@ void evotlSim::runSimulation(int maxRunTime) {
         }
     }
 
+    std::cout << "\n--- END OF SIMULATION ---\n";
+    showFleet();
     statisticsRecorder.displayStats();
 
 }
@@ -125,7 +127,43 @@ void evotlSim::handleStep(double timeElapsed) {
 
 }
 
+std::string aircraftStateToString(aircraft::aircraftState state) {
+    switch (state) {
+        case aircraft::FLYING:   return "Flying";
+        case aircraft::CHARGING: return "Charging";
+        case aircraft::WAITING:  return "Waiting for Charger";
+        default:                 return "Unknown";
+    }
+}
 
+void evotlSim::showFleet() const {
+    std::cout << "\n--- FLEET STATUS ---\n";
+    if (fleet.empty()) {
+        std::cout << "The fleet is empty.\n";
+        return;
+    }
+
+    // A simple header for the output table
+    std::cout << std::left << std::setw(20) << "Aircraft Type"
+              << "| State\n";
+    std::cout << "--------------------|----------------------\n";
+
+    // Loop through each vehicle in the fleet.
+    // Use 'const auto&' for efficiency to avoid copying the aircraft object.
+    for (const auto& vehicle : fleet) {
+
+        // Get the vehicle's type name
+        std::string name = vehicle.getType().getName();
+
+        // Get the vehicle's state and convert it to a string using our helper
+        std::string state_str = aircraftStateToString(vehicle.getAircraftState());
+
+        // Print the formatted line
+        std::cout << std::left << std::setw(20) << name
+                  << "| " << state_str << '\n';
+    }
+    std::cout << "--------------------\n";
+}
 
 void evotlSim::showAircraftTypes() const {
     for (const auto & aircraftType : aircraftTypes) {

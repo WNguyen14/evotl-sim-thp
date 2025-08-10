@@ -4,8 +4,8 @@
 
 #include "statisticsRecorder.h"
 
-statisticsRecorder::statisticsRecorder(const std::vector<aircraftType>& types) {
-    for (const auto & type : types) {
+statisticsRecorder::statisticsRecorder(const std::vector<aircraftType>* types) {
+    for (const auto & type : *types) {
         statsMap[type.getName()] = stats();
     }
 }
@@ -51,7 +51,7 @@ void statisticsRecorder::displayStats() const {
 
         std::cout << "  Average Flight Time     : " << averageFlightTime / 3600.0 << " hours\n";
         std::cout << "  Average Distance Travelled: " << averageDistance << " miles\n";
-        std::cout << "  Average Time Charging   : " << averageChargeTime << " hours\n";
+        std::cout << "  Average Time Charging   : " << averageChargeTime / 3600.0 << " hours\n";
         std::cout << "  Total Number of Faults  : " << stat.totalNumFaults << "\n";
         std::cout << "  Total Passenger Miles   : " << stat.totalPassengerMiles << "\n\n";
     }

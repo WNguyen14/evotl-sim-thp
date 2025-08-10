@@ -26,16 +26,19 @@ double aircraft::updateFlight(double timeElapsed) {
 
     double timeFlownInThisStep = 0.0;
 
+    // use all the energy we need for this step
     if (currentCharge >= energyForFullStep) {
         currentCharge -= energyForFullStep;
         currentFlightDistance += distanceForFullStep;
         timeFlownInThisStep = timeElapsed;
     }
+
+    //fractional case
     else {
         const double distanceActuallyFlown = currentCharge / energyUsage;
         const double timeActuallyFlown = distanceActuallyFlown / speed;
         timeFlownInThisStep = timeActuallyFlown;
-        currentFlightDistance += timeActuallyFlown;
+        currentFlightDistance += distanceActuallyFlown;
         currentCharge = 0.0;
         currentState = aircraftState::WAITING;
     }
@@ -53,22 +56,25 @@ double aircraft::updateCharge(double timeElapsed) {
         return 0.0;
     }
 
+    // convert to kwh/second
+    const double timeToReachFullSeconds = type.getTimeToCharge() / SEC_TO_HOURS;
+    const double chargeRateSeconds = batteryCapacity / timeToReachFullSeconds;
     const double energyNeeded = batteryCapacity - currentCharge;
-    const double chargeRate = batteryCapacity / type.getTimeToCharge();
-    const double timeToReachFull = energyNeeded / chargeRate;
+    const double secondsToReachFull = energyNeeded / chargeRateSeconds;
 
     double timeSpentChargingInThisStep = 0.0;
-    if (timeToReachFull <= timeElapsed) {
+
+
+    if (secondsToReachFull <= timeElapsed) {
         // fractional case
         currentCharge = batteryCapacity;
-        timeSpentChargingInThisStep = timeToReachFull;
+        timeSpentChargingInThisStep = secondsToReachFull;
         // if we spent less than the total amount of time in this step charging, that means we just finished charging
         currentState = aircraftState::FLYING;
-
     }
     else {
         // full usage of time step
-        currentCharge += chargeRate * timeElapsed;
+        currentCharge += chargeRateSeconds * timeElapsed;
         timeSpentChargingInThisStep += timeElapsed;
     }
     currentChargeSessionTime += timeSpentChargingInThisStep;

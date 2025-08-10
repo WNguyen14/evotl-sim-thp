@@ -12,6 +12,7 @@
 #include <iostream>
 #include <random>
 #include <ctime> // Used for seeding the random number generator
+#include <memory>
 #include <queue>
 
 
@@ -19,16 +20,18 @@
 class evotlSim {
 
 public:
+    // don't like using initializer list here, because then we're forced default construct a ton of empty aircraft types for recording
     evotlSim(int numVehicles, int numChargers, int maxRunTime) : numVehicles(numVehicles), chargers(numChargers),
                                                                  maxRunTime(maxRunTime),
+                                                                    statisticsRecorder(&aircraftTypes),
                                                                  random_engine(std::time(nullptr)),
-                                                                     uniform_dist(0.0, 1.0),
-                                                                 statisticsRecorder(std::vector<aircraftType>(numVehicles)){
+                                                                     uniform_dist(0.0, 1.0){
     };
 
     void startSimulation();
 
     void showAircraftTypes() const;
+    void showFleet() const;
 private:
 
     // init variables
