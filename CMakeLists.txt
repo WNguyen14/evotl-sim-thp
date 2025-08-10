@@ -10,4 +10,9 @@ file(GLOB SOURCES "src/*.cpp")
 add_executable(evotl-sim ${SOURCES}
         include/aircraft.h
         include/evotlSim.cpp
-        include/aircraftType.hpp)
+        include/aircraftType.hpp
+        include/charger.h
+        include/aircraft.cpp
+        include/charger.cpp
+        include/statisticsRecorder.h
+        include/statisticsRecorder.cpp)

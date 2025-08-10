@@ -2,11 +2,130 @@
 
 #include <algorithm>
 
-// main simulation runner
-evotlSim::evotlSim(int seed) {
+//TODO FIX INTS
+
+void evotlSim::startSimulation() {
+    //Initialize simulation here, aircraft types, total fleet, chargers
     initTypesFromCsv("../vehicles.csv");
-    generateFleet(20, seed);
+    generateFleet();
+
+    runSimulation(maxRunTime);
 }
+
+// max run time is in hours
+void evotlSim::runSimulation(int maxRunTime) {
+
+    //TODO multi thread here maybe?
+
+    //convert hours to seconds
+    for (uint32_t i = 0; i < maxRunTime * 3600; i++) {
+        handleStep(1);
+    }
+
+    //END ALL FLYING FLIGHTS
+    for (auto& aircraft : fleet) {
+        if (aircraft.getAircraftState() == aircraft::FLYING) {
+            statisticsRecorder.recordFlight(
+                           aircraft.getType(),
+                           aircraft.getCurrentFlightDistance(),
+                   aircraft.getCurrentFlightTime());
+        }
+    }
+
+    statisticsRecorder.displayStats();
+
+}
+
+/*
+ * assume that a flight begins when simulation starts or when an aircraft leaves the charger
+ * and flight ends when simulation ends or aircraft runs out of battery
+ */
+void evotlSim::handleStep(double timeElapsed) {
+
+    //grab currently flying aircraft
+    std::vector<aircraft*> currentlyFlying;
+    for (auto& aircraft : fleet) {
+        if (aircraft.getAircraftState() == aircraft::FLYING) {
+            currentlyFlying.push_back(&aircraft);
+        }
+    }
+
+    //handle the charging (because you can leave the charger and then join the flying aircraft)
+    for (auto& charger : chargers) {
+        if (!charger.getIsBusy()) continue;
+
+        aircraft* currentAircraft = charger.getCurrentAircraft();
+        double chargeTime = currentAircraft->updateCharge(timeElapsed);
+
+        //if we're now flying, that means we have finished charging for this charger
+        if (currentAircraft->getAircraftState() == aircraft::FLYING) {
+            // CHARGE EVENT JUST ENDED, LOG THIS CHARGE SESSION
+            statisticsRecorder.recordChargeSession(currentAircraft->getType(), currentAircraft->getCurrentChargeSessionTime());
+
+            double remainingTime = timeElapsed - chargeTime;
+            if (remainingTime > 0.0) {
+                // FLIGHT EVENT STARTS SINCE WE HAVE SOME TIME LEFT IN THIS TIMESTEP
+                currentAircraft->startNewFlight();
+                double flightTime = currentAircraft->updateFlight(remainingTime);
+                if (flightTime > 0.0) {
+                    if (checkFault(*currentAircraft, flightTime)) {
+                        //ASSUME IT'S OK FOR AIRCRAFT TO KEEP FLYING
+                        statisticsRecorder.recordFault(currentAircraft->getType());
+                    }
+                }
+            }
+
+            charger.stopCharging();
+        }
+    }
+
+    //handling the currently flying aircraft in the fleet
+    for (auto& currentAircraft : currentlyFlying) {
+
+        /*
+         * thinking about whether the simulation itself should modulate the aircraft states directly,
+         * or if the aircraft should mutate their own members. going in the direction of the simulation mutating each
+         * aircraft's member variables
+         */
+
+        if (currentAircraft->getAircraftState() == aircraft::FLYING)
+        {
+                // check how much we flew in this timestep
+                double flightTime = currentAircraft->updateFlight(timeElapsed);
+                if (flightTime > 0.0) {
+                    // handling the fault outside the aircraft because seems like the sim should own the occurrence of errors
+                    if (checkFault(*currentAircraft, flightTime)) {
+                        //ASSUME IT'S OK FOR AIRCRAFT TO KEEP FLYING
+                        statisticsRecorder.recordFault(currentAircraft->getType());
+                    }
+                }
+                //check again to see if we had changed states
+                if (currentAircraft->getAircraftState() == aircraft::aircraftState::WAITING) {
+                    statisticsRecorder.recordFlight(
+                            currentAircraft->getType(),
+                            currentAircraft->getCurrentFlightDistance(),
+                    currentAircraft->getCurrentFlightTime()
+                    );
+                    aircraftQueue.push(currentAircraft);
+                }
+        }
+    }
+
+    // handle the waiting aircraft and let them charge
+    for (auto& charger : chargers) {
+        if (!charger.getIsBusy() && !aircraftQueue.empty()) {
+            aircraft* nextAircraft = aircraftQueue.front();
+            aircraftQueue.pop();
+
+            nextAircraft->startNewChargeSession();
+            charger.startCharging(nextAircraft);
+
+        }
+    }
+
+}
+
+
 
 void evotlSim::showAircraftTypes() const {
     for (const auto & aircraftType : aircraftTypes) {
@@ -34,17 +153,15 @@ void evotlSim::initTypesFromCsv(const std::string& fileName) {
         ss >> cruise >> comma >> batt >> comma >> charge >> comma
            >> energy >> comma >> passengers >> comma >> fault;
 
-        auto temp = aircraftType(name, cruise, batt, charge, energy, passengers, fault);
+        aircraftType temp{aircraftType(name, cruise, batt, charge, energy, passengers, fault)};
 
         aircraftTypes.push_back(temp);
     }
 }
 
 //generate many aircraft in this fleet such that we have at least one in the fleet per type of vehicle
-void evotlSim::generateFleet(const int numberInFleet, const int seed) {
+void evotlSim::generateFleet() {
 
-    //create RNG machine
-    std::mt19937 random_engine(seed);
     //create random integers from 0 -> num aircraft types
     //TODO probably OK to use size_t here for the second param
     // ASSUMPTION: do not need to guarantee that at least one company is represented? will put in at least one of each
@@ -57,11 +174,33 @@ void evotlSim::generateFleet(const int numberInFleet, const int seed) {
         fleet.push_back(a);
     }
     //fill in the remainder
-    int remainder = numberInFleet - fleet.size();
-    for (int i = 0; i < remainder; ++i) {
+    int remainder = numVehicles - fleet.size();
+    for (int i = 0; i < remainder + 1; ++i) {
         int random_index = distribution(random_engine);
-        auto a = aircraft(aircraftTypes[random_index]);
+        auto a{aircraft(aircraftTypes[random_index])};
         fleet.push_back(a);
     }
-
 }
+
+void evotlSim::instantiateChargers() {
+    for (int i = 0; i < numChargers; ++i) {
+        chargers.emplace_back();
+    }
+}
+
+
+bool evotlSim::checkFault(const aircraft &currentAircraft, double timeElapsed) {
+    double probability = currentAircraft.getType().getFaultProbability();
+
+    double probabilityNoFault = 1.0 - probability;
+    double probabilityInStep = std::pow(probabilityNoFault, timeElapsed);
+    double probabilityFault = 1.0 - probabilityInStep;
+
+    std::uniform_real_distribution<double> m_uniform_dist;
+
+    double rollForFault = m_uniform_dist(random_engine);
+
+    return rollForFault < probabilityFault;
+}
+
+

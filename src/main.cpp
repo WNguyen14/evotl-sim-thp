@@ -4,9 +4,9 @@
 int main() {
     std::cout << "Hello, evotl sim!!" << std::endl;
 
-    evotlSim sim(std::time(nullptr));
+    // create sim here - numVehicles, numChargers, maxRunTime(seconds), seed,
+    evotlSim sim(20, 3, 3);
+    sim.startSimulation();
 
-    //sim.showAircraftTypes();
-    // Additional logic can be added here
     return 0;
 }

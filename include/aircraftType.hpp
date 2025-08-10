@@ -47,7 +47,7 @@ public:
 private:
     std::string name{"NOT INITIALIZED"};
 
-    //TODO maybe make a null type
+    //TODO maybe make a null type, for now just default everything to 0
     double cruiseSpeed{};
     double batteryCapacity{};
     double timeToCharge{};
