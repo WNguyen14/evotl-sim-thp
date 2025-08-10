@@ -13,7 +13,9 @@ class aircraft {
     static constexpr double SEC_TO_HOURS = 1.0/3600.0;
 public:
     explicit aircraft(const aircraftType &specification) {
-       type = specification;
+        type = specification;
+        currentCharge = type.getBatteryCapacity();
+        currentState = aircraftState::FLYING;
     }
     ~aircraft() = default;
 
@@ -43,11 +45,11 @@ private:
     aircraftType type{};
 
     // aircraft state - they start with max battery and already flying
-    double currentCharge{type.getBatteryCapacity()};
+    double currentCharge{};
     double currentFlightTime{};
     double currentFlightDistance{};
     double currentChargeSessionTime{};
-    aircraftState currentState{aircraftState::FLYING};
+    aircraftState currentState{};
 
     //implement current velocity for future work - instead of constantly using max speed, implement with acceleration
 

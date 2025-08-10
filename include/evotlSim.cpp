@@ -166,20 +166,19 @@ void evotlSim::generateFleet() {
     //TODO probably OK to use size_t here for the second param
     // ASSUMPTION: do not need to guarantee that at least one company is represented? will put in at least one of each
     // for completeness though
-    std::uniform_int_distribution<int> distribution(0, aircraftTypes.size());
+    std::uniform_int_distribution<int> distribution(0, aircraftTypes.size() - 1);
 
     //fill in one aircraft for each aircraft type
     for (const auto & aircraftType : aircraftTypes) {
-        auto a = aircraft(aircraftType);
-        fleet.push_back(a);
+        fleet.emplace_back(aircraft(aircraftType));
     }
     //fill in the remainder
     int remainder = numVehicles - fleet.size();
-    for (int i = 0; i < remainder + 1; ++i) {
+    for (int i = 0; i < remainder; ++i) {
         int random_index = distribution(random_engine);
-        auto a{aircraft(aircraftTypes[random_index])};
-        fleet.push_back(a);
+        fleet.emplace_back(aircraftTypes[random_index]);
     }
+
 }
 
 void evotlSim::instantiateChargers() {
@@ -189,16 +188,17 @@ void evotlSim::instantiateChargers() {
 }
 
 
+// assuming its OK to divide the probability of fault from hours to seconds
 bool evotlSim::checkFault(const aircraft &currentAircraft, double timeElapsed) {
     double probability = currentAircraft.getType().getFaultProbability();
 
+    double convertToHours = timeElapsed / 3600.0;
     double probabilityNoFault = 1.0 - probability;
-    double probabilityInStep = std::pow(probabilityNoFault, timeElapsed);
+    double probabilityInStep = std::pow(probabilityNoFault, convertToHours);
     double probabilityFault = 1.0 - probabilityInStep;
 
-    std::uniform_real_distribution<double> m_uniform_dist;
 
-    double rollForFault = m_uniform_dist(random_engine);
+    double rollForFault = uniform_dist(random_engine);
 
     return rollForFault < probabilityFault;
 }

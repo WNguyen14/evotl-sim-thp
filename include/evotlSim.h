@@ -22,6 +22,7 @@ public:
     evotlSim(int numVehicles, int numChargers, int maxRunTime) : numVehicles(numVehicles), chargers(numChargers),
                                                                  maxRunTime(maxRunTime),
                                                                  random_engine(std::time(nullptr)),
+                                                                     uniform_dist(0.0, 1.0),
                                                                  statisticsRecorder(std::vector<aircraftType>(numVehicles)){
     };
 
@@ -33,6 +34,7 @@ private:
     // init variables
     int numVehicles, numChargers, maxRunTime;
     std::mt19937 random_engine;
+    std::uniform_real_distribution<double> uniform_dist;
 
 
     void initTypesFromCsv(const std::string& fileName);
