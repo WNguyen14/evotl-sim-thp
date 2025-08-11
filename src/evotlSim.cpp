@@ -40,6 +40,8 @@ void evotlSim::runSimulation(int maxRunTime) {
 /*
  * assume that a flight begins when simulation starts or when an aircraft leaves the charger
  * and flight ends when simulation ends or aircraft runs out of battery
+ *
+ * !!! assuming that an aircraft that doesn't have enough battery for one second of movement does not exist
  */
 void evotlSim::handleStep(double timeElapsed) {
 
@@ -173,6 +175,7 @@ void evotlSim::showAircraftTypes() const {
 // TODO: guard against bad files
 void evotlSim::initTypesFromCsv(const std::string& fileName) {
     aircraftTypes.clear();
+    std::cout << std::filesystem::current_path() << '\n';
     std::ifstream file(fileName);
     std::string line;
     getline(file, line); // skip header

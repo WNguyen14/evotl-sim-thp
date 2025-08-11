@@ -12,4 +12,5 @@ int main() {
 // current issues:
 /*
  *  division is super weird sometimes
+ *  more granularity with timestepping? (currently pretty tied to one second per time step)
  */

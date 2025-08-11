@@ -6,26 +6,35 @@ FetchContent_Declare(
         googletest
         URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
-# For other projects, you might want to make this a little more robust
 FetchContent_MakeAvailable(googletest)
 
 
 # --- Define the Test Executable ---
 add_executable(
         run_tests
-        aircraftTest.cpp  # Add all your test files here
+        aircraftTest.cpp
+        evotlSimTest.cpp  # Add all your test files here
 )
+
+target_compile_definitions(run_tests
+        PRIVATE
+        # This creates a C++ macro: #define VEHICLE_CSV_PATH "C:/Users/William/.../evotl-sim/vehicles.csv"
+        VEHICLE_CSV_PATH="${CMAKE_SOURCE_DIR}/vehicles.csv"
+)
+
+# --- The Fix ---
+# Explicitly add the main project's include directory to the test target.
+# CMAKE_SOURCE_DIR refers to the top-level project directory.
+target_include_directories(run_tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
 
 # Link your tests against your project library and Google Test
 target_link_libraries(
         run_tests
         PRIVATE
-        evotl_lib   # Your project's code
-        GTest::gtest_main # Google Test framework
+        evotl_lib           # Your project's code
+        GTest::gtest_main   # Google Test framework
 )
-
-# Include Google Test headers
-target_include_directories(run_tests PRIVATE ${gtest_SOURCE_DIR}/include)
 
 # Add the test to ctest
 include(GoogleTest)

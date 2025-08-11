@@ -14,7 +14,7 @@
 #include <ctime> // Used for seeding the random number generator
 #include <memory>
 #include <queue>
-
+#include <filesystem>
 
 // Class declarations
 class evotlSim {
@@ -32,7 +32,9 @@ public:
 
     void showAircraftTypes() const;
     void showFleet() const;
-private:
+
+    //TODO: probably would do private here too but working around this for testing
+protected:
 
     // init variables
     int numVehicles, numChargers, maxRunTime;

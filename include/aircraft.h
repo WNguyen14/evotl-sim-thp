@@ -39,6 +39,15 @@ public:
     void startNewFlight();
     void startNewChargeSession();
 
+    //FOR TESTING ONLY
+    // TODO: [originally made this private but couldn't figure out why it didn't work???]
+    friend class aircraftTest;
+    void setCharge(double charge) {
+        currentCharge = charge;
+    }
+    void setState(aircraftState state) {
+        currentState = state;
+    }
 
 private:
     //TODO create default type maybe
@@ -52,7 +61,6 @@ private:
     aircraftState currentState{};
 
     //implement current velocity for future work - instead of constantly using max speed, implement with acceleration
-
 
 
 };
