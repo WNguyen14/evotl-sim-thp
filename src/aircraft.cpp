@@ -2,7 +2,7 @@
 // Created by William on 8/9/2025.
 //
 
-#include "aircraft.h"
+#include "../include/aircraft.h"
 
 #include <cmath>
 

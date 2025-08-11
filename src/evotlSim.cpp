@@ -1,4 +1,4 @@
-#include "evotlSim.h"
+#include "../include/evotlSim.h"
 
 #include <algorithm>
 
@@ -8,7 +8,6 @@ void evotlSim::startSimulation() {
     //Initialize simulation here, aircraft types, total fleet, chargers
     initTypesFromCsv("../vehicles.csv");
     generateFleet();
-
     runSimulation(maxRunTime);
 }
 

@@ -23,7 +23,7 @@ public:
     // don't like using initializer list here, because then we're forced default construct a ton of empty aircraft types for recording
     evotlSim(int numVehicles, int numChargers, int maxRunTime) : numVehicles(numVehicles), chargers(numChargers),
                                                                  maxRunTime(maxRunTime),
-                                                                    statisticsRecorder(&aircraftTypes),
+                                                                    statisticsRecorder(aircraftTypes),
                                                                  random_engine(std::time(nullptr)),
                                                                      uniform_dist(0.0, 1.0){
     };

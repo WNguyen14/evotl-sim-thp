@@ -2,10 +2,10 @@
 // Created by William on 8/10/2025.
 //
 
-#include "statisticsRecorder.h"
+#include "../include/statisticsRecorder.h"
 
-statisticsRecorder::statisticsRecorder(const std::vector<aircraftType>* types) {
-    for (const auto & type : *types) {
+statisticsRecorder::statisticsRecorder(const std::vector<aircraftType>& types) {
+    for (const auto & type : types) {
         statsMap[type.getName()] = stats();
     }
 }
