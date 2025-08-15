@@ -4,13 +4,20 @@
 
 #ifndef EVOTL_SIM_CHARGER_H
 #define EVOTL_SIM_CHARGER_H
-#include "aircraft.h"
+
+class aircraft;
 
 
 class charger {
 public:
     charger() = default;
     ~charger() = default;
+
+    charger(const charger&) = delete;
+    charger& operator=(const charger&) = delete;
+
+    charger(charger&&) = default;
+    charger& operator=(charger&&) = default;
 
     void startCharging(aircraft* aircraft);
     void stopCharging();

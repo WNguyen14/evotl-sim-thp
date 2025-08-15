@@ -1,7 +1,6 @@
 #ifndef EVOTLSIM_H
 #define EVOTLSIM_H
 
-#include "aircraft.h"
 #include "aircraftType.hpp"
 #include "charger.h"
 #include "statisticsRecorder.h"
@@ -14,20 +13,25 @@
 #include <ctime> // Used for seeding the random number generator
 #include <memory>
 #include <queue>
+#include <set>
 #include <filesystem>
+#include <algorithm>
+
+class aircraft; 
 
 // Class declarations
 class evotlSim {
 
 public:
-    // don't like using initializer list here, because then we're forced default construct a ton of empty aircraft types for recording
-    evotlSim(int numVehicles, int numChargers, int maxRunTime) : numVehicles(numVehicles), chargers(numChargers),
-                                                                 maxRunTime(maxRunTime),
-                                                                    statisticsRecorder(aircraftTypes),
-                                                                 random_engine(std::time(nullptr)),
-                                                                     uniform_dist(0.0, 1.0){
-    };
+    evotlSim(int numVehicles, int numChargers, int maxRunTime, const std::string& vehicleCsvPath);
+    ~evotlSim();
+    evotlSim(const evotlSim&) = delete;
+    evotlSim& operator=(const evotlSim&) = delete;
 
+    evotlSim(evotlSim&&) = default;
+    evotlSim& operator=(evotlSim&&) = default;
+
+    void initSimulation(const std::string& vehicleCsvPath);
     void startSimulation();
 
     void showAircraftTypes() const;
@@ -46,15 +50,14 @@ protected:
     std::vector<aircraftType> aircraftTypes;
 
     void generateFleet();
-    std::vector<aircraft> fleet;
+    std::vector<std::unique_ptr<aircraft>> fleet;
 
     void instantiateChargers();
     std::vector<charger> chargers;
     std::queue<aircraft*> aircraftQueue;
 
     //ASSUMPTION: using seconds for discrete simulation time
-    void runSimulation(int maxRunTime);
-    int currentTime{};
+    void runSimulation();
 
     void handleStep(double timeElapsed);
 

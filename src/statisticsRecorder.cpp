@@ -4,7 +4,8 @@
 
 #include "../include/statisticsRecorder.h"
 
-statisticsRecorder::statisticsRecorder(const std::vector<aircraftType>& types) {
+void statisticsRecorder::init(const std::vector<aircraftType>& types) {
+    statsMap.clear(); // Make sure it's empty
     for (const auto & type : types) {
         statsMap[type.getName()] = stats();
     }
@@ -27,6 +28,8 @@ void statisticsRecorder::recordChargeSession(const aircraftType& type, double du
 void statisticsRecorder::recordFault(const aircraftType& type) {
     statsMap[type.getName()].totalNumFaults++;
 }
+
+
 
 void statisticsRecorder::displayStats() const {
     std::cout << "\n========================================\n";

@@ -1,9 +1,17 @@
 #include <iostream>
 #include "evotlSim.h"
 
-int main() {
-    // create sim here - numVehicles, numChargers, maxRunTime(seconds), seed,
-    evotlSim sim(20, 3, 3);
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "ERROR: Incorrect number of arguments." << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <path_to_vehicles.csv>" << std::endl;
+        return 1; // Return a non-zero value to indicate an error
+    }
+    std::string csv_path = argv[1];
+
+    // create sim here - numVehicles, numChargers, maxRunTime(hours), seed,
+    std::cout << "Starting eVTOL simulation..." << std::endl;
+    evotlSim sim(20, 3, 3, csv_path);
     sim.startSimulation();
 
     return 0;

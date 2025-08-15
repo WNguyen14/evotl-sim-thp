@@ -14,7 +14,11 @@ class aircraft {
 public:
     explicit aircraft(const aircraftType &specification) {
         type = specification;
-        currentCharge = type.getBatteryCapacity();
+        currentCharge = specification.getBatteryCapacity();
+        currentFlightTime = 0.0;
+        currentFlightDistance = 0.0;
+        currentChargeSessionTime = 0.0;
+        // Start with the aircraft already flying
         currentState = aircraftState::FLYING;
     }
     ~aircraft() = default;
