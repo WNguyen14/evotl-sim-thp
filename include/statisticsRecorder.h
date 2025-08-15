@@ -31,7 +31,9 @@ struct stats {
 
 class statisticsRecorder {
 public:
-    explicit statisticsRecorder(const std::vector<aircraftType>& types);
+    statisticsRecorder() = default;
+
+    void init(const std::vector<aircraftType>& types);
 
     void recordFlight(const aircraftType& type, double distance, double duration);
 
@@ -40,6 +42,8 @@ public:
     void recordFault(const aircraftType& type);
 
     void displayStats() const;
+
+    const std::map<std::string, stats>& getStatsMap() const { return statsMap; }
 
 private:
     std::map<std::string, stats> statsMap;

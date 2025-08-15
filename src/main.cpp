@@ -2,8 +2,9 @@
 #include "evotlSim.h"
 
 int main() {
-    // create sim here - numVehicles, numChargers, maxRunTime(seconds), seed,
+    // create sim here - numVehicles, numChargers, maxRunTime(hours), seed,
     evotlSim sim(20, 3, 3);
+    sim.initSimulation(); // Initialize aircraft types, fleet, and chargers
     sim.startSimulation();
 
     return 0;

@@ -12,6 +12,12 @@ public:
     charger() = default;
     ~charger() = default;
 
+    charger(const charger&) = delete;
+    charger& operator=(const charger&) = delete;
+
+    charger(charger&&) = default;
+    charger& operator=(charger&&) = default;
+
     void startCharging(aircraft* aircraft);
     void stopCharging();
     bool getIsBusy() const {return isBusy;}

@@ -1,25 +1,47 @@
 #include "../include/evotlSim.h"
 
-#include <algorithm>
+#ifndef VEHICLE_CSV_PATH
+#error "VEHICLE_CSV_PATH is not defined. Check your tests/CMakeLists.txt"
+#endif
+evotlSim::~evotlSim() {
+    // When the simulation is over, we must ensure no chargers are left
+    // holding pointers to aircraft that are about to be destroyed.
+    for (auto& charger : chargers) {
+        if (charger.getIsBusy()) {
+            charger.stopCharging(); // This sets currentAircraft to nullptr
+        }
+    }
+}
 
-//TODO FIX INTS
+void evotlSim::initSimulation() {
+    initTypesFromCsv(VEHICLE_CSV_PATH);
+    statisticsRecorder.init(aircraftTypes);
+                  
+    generateFleet();
+    instantiateChargers();
+}
 
 void evotlSim::startSimulation() {
     //Initialize simulation here, aircraft types, total fleet, chargers
-    initTypesFromCsv("../vehicles.csv");
-    generateFleet();
-    runSimulation(maxRunTime);
+    runSimulation();
+    std::cout << "[DEBUG] Returned from runSimulation SUCCESSFULLY." << std::endl;
+
 }
 
 // max run time is in hours
-void evotlSim::runSimulation(int maxRunTime) {
+void evotlSim::runSimulation() {
 
     //TODO multi thread here maybe?
+    std::cout << "[DEBUG] Starting simulation loop..." << std::endl;
 
     //convert hours to seconds
     for (uint32_t i = 0; i < maxRunTime * 3600; i++) {
+        if (i % 1000 == 0) { // Print a message every 1000 steps
+            std::cout << "[DEBUG] Simulation step " << i << std::endl;
+        }
         handleStep(1);
     }
+    std::cout << "[DEBUG] Simulation loop FINISHED." << std::endl;
 
     //END ALL FLYING FLIGHTS
     for (auto& aircraft : fleet) {
@@ -32,7 +54,10 @@ void evotlSim::runSimulation(int maxRunTime) {
     }
 
     std::cout << "\n--- END OF SIMULATION ---\n";
+
     showFleet();
+
+
     statisticsRecorder.displayStats();
 
 }
@@ -44,6 +69,8 @@ void evotlSim::runSimulation(int maxRunTime) {
  * !!! assuming that an aircraft that doesn't have enough battery for one second of movement does not exist
  */
 void evotlSim::handleStep(double timeElapsed) {
+
+    std::set<aircraft*> aircraftHandledThisStep;
 
     //grab currently flying aircraft
     std::vector<aircraft*> currentlyFlying;
@@ -79,12 +106,17 @@ void evotlSim::handleStep(double timeElapsed) {
             }
 
             charger.stopCharging();
+            aircraftHandledThisStep.insert(currentAircraft);
+
         }
     }
 
     //handling the currently flying aircraft in the fleet
     for (auto& currentAircraft : currentlyFlying) {
 
+        if (aircraftHandledThisStep.count(currentAircraft)) {
+            continue; // Skip this aircraft, its logic was handled in the charger loop
+        }
         /*
          * thinking about whether the simulation itself should modulate the aircraft states directly,
          * or if the aircraft should mutate their own members. going in the direction of the simulation mutating each
@@ -93,6 +125,7 @@ void evotlSim::handleStep(double timeElapsed) {
 
         if (currentAircraft->getAircraftState() == aircraft::FLYING)
         {
+                
                 // check how much we flew in this timestep
                 double flightTime = currentAircraft->updateFlight(timeElapsed);
                 if (flightTime > 0.0) {
@@ -107,8 +140,7 @@ void evotlSim::handleStep(double timeElapsed) {
                     statisticsRecorder.recordFlight(
                             currentAircraft->getType(),
                             currentAircraft->getCurrentFlightDistance(),
-                    currentAircraft->getCurrentFlightTime()
-                    );
+                            currentAircraft->getCurrentFlightTime());
                     aircraftQueue.push(currentAircraft);
                 }
         }
@@ -174,9 +206,13 @@ void evotlSim::showAircraftTypes() const {
 
 // TODO: guard against bad files
 void evotlSim::initTypesFromCsv(const std::string& fileName) {
+
     aircraftTypes.clear();
-    std::cout << std::filesystem::current_path() << '\n';
     std::ifstream file(fileName);
+    if (!file.is_open()) {
+        std::cerr << "ERROR: Could not open file: " << fileName << std::endl;
+        abort();
+    }
     std::string line;
     getline(file, line); // skip header
 
@@ -208,10 +244,14 @@ void evotlSim::generateFleet() {
     // for completeness though
     std::uniform_int_distribution<int> distribution(0, aircraftTypes.size() - 1);
 
-    //fill in one aircraft for each aircraft type
-    for (const auto & aircraftType : aircraftTypes) {
-        fleet.emplace_back(aircraft(aircraftType));
+    // If we have more vehicles than types, fill in one aircraft for each type
+    if (numVehicles >= static_cast<int>(aircraftTypes.size())) {
+        //fill in one aircraft for each aircraft type
+        for (const auto & aircraftType : aircraftTypes) {
+            fleet.emplace_back(aircraft(aircraftType));
+        }
     }
+    
     //fill in the remainder
     int remainder = numVehicles - fleet.size();
     for (int i = 0; i < remainder; ++i) {

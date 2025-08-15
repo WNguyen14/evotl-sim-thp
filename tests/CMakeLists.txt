@@ -1,5 +1,5 @@
 # In tests/CMakeLists.txt
-
+cmake_policy(SET CMP0135 NEW)
 # --- Google Test Integration ---
 include(FetchContent)
 FetchContent_Declare(
@@ -9,12 +9,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 
-# --- Define the Test Executable ---
-add_executable(
-        run_tests
-        aircraftTest.cpp
-        evotlSimTest.cpp  # Add all your test files here
-)
+add_executable(run_tests aircraftTest.cpp evotlSimTest.cpp)
+set_target_properties(run_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 
 target_compile_definitions(run_tests
         PRIVATE
@@ -26,7 +22,6 @@ target_compile_definitions(run_tests
 # Explicitly add the main project's include directory to the test target.
 # CMAKE_SOURCE_DIR refers to the top-level project directory.
 target_include_directories(run_tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
-
 
 # Link your tests against your project library and Google Test
 target_link_libraries(
