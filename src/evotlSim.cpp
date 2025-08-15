@@ -50,7 +50,6 @@ void evotlSim::runSimulation() {
     //TODO multi thread here maybe?
     //convert hours to seconds
     for (uint32_t i = 0; i < maxRunTime * 3600; i++) {
-
         handleStep(1);
     }
 
@@ -92,8 +91,10 @@ void evotlSim::runSimulation() {
  * and flight ends when simulation ends or aircraft runs out of battery
  *
  * !!! assuming that an aircraft that doesn't have enough battery for one second of movement does not exist
+ *
  */
-void evotlSim::handleStep(double timeElapsed) {
+
+ void evotlSim::handleStep(double timeElapsed) {
 
     std::set<aircraft*> aircraftHandledThisStep;
 
@@ -201,13 +202,10 @@ void evotlSim::showFleet() const {
         return;
     }
 
-    // A simple header for the output table
     std::cout << std::left << std::setw(20) << "Aircraft Type"
               << "| State\n";
     std::cout << "--------------------|----------------------\n";
 
-    // Loop through each vehicle in the fleet.
-    // Use 'const auto&' for efficiency to avoid copying the aircraft object.
     for (const auto& aircraft : fleet) {
 
         // Get the vehicle's type name

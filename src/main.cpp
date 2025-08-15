@@ -10,7 +10,6 @@ int main(int argc, char* argv[]) {
     std::string csv_path = argv[1];
 
     // create sim here - numVehicles, numChargers, maxRunTime(hours), seed,
-    std::cout << "Starting eVTOL simulation..." << std::endl;
     evotlSim sim(20, 3, 3, csv_path);
     sim.startSimulation();
 

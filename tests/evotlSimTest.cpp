@@ -2,7 +2,7 @@
 // Created by William on 8/10/2025.
 //
 #include "gtest/gtest.h"
-#include "evotlSim.h" // Your main simulation header
+#include "evotlSim.h"
 #include <memory>
 
 #ifndef VEHICLE_CSV_PATH
@@ -34,7 +34,7 @@ public:
     std::vector<std::unique_ptr<aircraft>>& getFleet() { return fleet; }
     std::vector<aircraftType>& getAircraftTypes() { return aircraftTypes; }
     const std::map<std::string, stats>& getFinalStats() const {
-            return statisticsRecorder.getStatsMap(); // Assumes a getter in statisticsRecorder
+            return statisticsRecorder.getStatsMap();
         }
 };
 
@@ -45,7 +45,6 @@ protected:
     void SetUp() override {
         // Create a sim with specific, non-random conditions for testing
         sim = new testableSimulation(1, 1, 1, VEHICLE_CSV_PATH); // 1 vehicle, 1 charger
-        // We'll manually create the fleet to avoid randomness
     }
 
     void TearDown() override {
@@ -97,8 +96,6 @@ TEST_F(evotlSimTest, FullCycle_DepletesAndImmediatelyChargesWithAvailableCharger
     EXPECT_EQ(sim->getChargers()[0].getCurrentAircraft(), theAircraft);
 }
 
-// In tests/evotlSimTest.cpp
-
 TEST_F(evotlSimTest, Statistics_VerifyEndToEndResultsForDeterministicScenario) {
     // Arrange
     delete sim;
@@ -116,11 +113,7 @@ TEST_F(evotlSimTest, Statistics_VerifyEndToEndResultsForDeterministicScenario) {
     ASSERT_TRUE(statsMap.count("Bravo"));
     const stats& bravoStats = statsMap.at("Bravo");
 
-    // --- CHANGED: Use EXPECT_NEAR with a reasonable tolerance for ALL floating point values ---
-    // A tolerance of 0.1 is very safe for these large accumulated values.
     const double tolerance = 0.1;
-
-    // --- Verify the results against our paper calculations ---
 
     // Verify flight counts and times
     ASSERT_EQ(bravoStats.flightsCompleted, 4);
@@ -141,4 +134,50 @@ TEST_F(evotlSimTest, Statistics_VerifyEndToEndResultsForDeterministicScenario) {
 
     // Verify passenger miles
     EXPECT_NEAR(bravoStats.totalPassengerMiles, 1200.0, tolerance);
+}
+
+TEST_F(evotlSimTest, MultiAircraft_ResourceContention_EndToEnd_StatsVerification) {
+    // --- ARRANGE ---
+    delete sim;
+    // Use our deterministic simulation class with 2 vehicles, 1 charger, for a 3-hour run.
+    sim = new testableSimulation(2, 1, 3, VEHICLE_CSV_PATH);
+
+    // Manually create a fleet with one Bravo and one Delta aircraft for a predictable scenario.
+    sim->getFleet().clear();
+    const auto& types = sim->getAircraftTypes();
+    aircraftType bravoType = types[1]; // Bravo is at index 1
+    aircraftType deltaType = types[3]; // Delta is at index 3
+    sim->getFleet().push_back(std::make_unique<aircraft>(bravoType));
+    sim->getFleet().push_back(std::make_unique<aircraft>(deltaType));
+
+    // --- ACT ---
+    sim->test_runSimulation();
+
+    // --- ASSERT ---
+    // Retrieve the final statistics and verify them against our corrected "golden" values.
+    const auto& statsMap = sim->getFinalStats();
+    const double tolerance = 1; // Tolerance for floating point comparisons
+
+    // --- Verify Bravo Stats ---
+    ASSERT_TRUE(statsMap.count("Bravo"));
+    const stats& bravoStats = statsMap.at("Bravo");
+    
+    EXPECT_EQ(bravoStats.flightsCompleted, 4);
+    EXPECT_EQ(bravoStats.chargeSessionsCompleted, 3);
+    EXPECT_NEAR(bravoStats.totalFlightTime, 8640.0, tolerance);
+    EXPECT_NEAR(bravoStats.timeSpentCharging, 2160.0, tolerance);
+    EXPECT_NEAR(bravoStats.totalDistanceTravelled, 240.0, tolerance);
+    EXPECT_NEAR(bravoStats.totalPassengerMiles, 1200.0, tolerance);
+    EXPECT_EQ(bravoStats.totalNumFaults, 0);
+
+    // --- Verify Delta Stats ---
+    ASSERT_TRUE(statsMap.count("Delta"));
+    const stats& deltaStats = statsMap.at("Delta");
+
+    EXPECT_EQ(deltaStats.flightsCompleted, 2);
+    EXPECT_EQ(deltaStats.chargeSessionsCompleted, 1);
+    EXPECT_NEAR(deltaStats.totalFlightTime, 8328.0, tolerance);
+    EXPECT_NEAR(deltaStats.timeSpentCharging, 2232.0, tolerance);
+    EXPECT_NEAR(deltaStats.totalDistanceTravelled, 208.2, tolerance);
+    EXPECT_NEAR(deltaStats.totalPassengerMiles, 416.4, tolerance);
 }

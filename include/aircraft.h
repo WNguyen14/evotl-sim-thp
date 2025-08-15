@@ -65,8 +65,6 @@ private:
     aircraftState currentState{};
 
     //implement current velocity for future work - instead of constantly using max speed, implement with acceleration
-
-
 };
 
 
