@@ -14,7 +14,6 @@ target_include_directories(evotl_lib PUBLIC include)
 
 add_executable(evotl-sim src/main.cpp)
 target_link_libraries(evotl-sim evotl_lib)
-target_compile_definitions(evotl_lib PRIVATE VEHICLE_CSV_PATH="${CMAKE_SOURCE_DIR}/vehicles.csv")
 
 enable_testing()
 add_subdirectory(tests)

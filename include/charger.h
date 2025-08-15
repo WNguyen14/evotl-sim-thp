@@ -4,7 +4,8 @@
 
 #ifndef EVOTL_SIM_CHARGER_H
 #define EVOTL_SIM_CHARGER_H
-#include "aircraft.h"
+
+class aircraft;
 
 
 class charger {

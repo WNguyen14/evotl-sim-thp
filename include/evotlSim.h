@@ -1,7 +1,6 @@
 #ifndef EVOTLSIM_H
 #define EVOTLSIM_H
 
-#include "aircraft.h"
 #include "aircraftType.hpp"
 #include "charger.h"
 #include "statisticsRecorder.h"
@@ -18,22 +17,21 @@
 #include <filesystem>
 #include <algorithm>
 
+class aircraft; 
 
 // Class declarations
 class evotlSim {
 
 public:
-    evotlSim(int numVehicles, int numChargers, int maxRunTime) : numVehicles(numVehicles), numChargers(numChargers),
-                                                            maxRunTime(maxRunTime),
-                                                            random_engine(std::time(nullptr)),
-                                                                uniform_dist(0.0, 1.0)
-        {};
-
+    evotlSim(int numVehicles, int numChargers, int maxRunTime, const std::string& vehicleCsvPath);
     ~evotlSim();
     evotlSim(const evotlSim&) = delete;
     evotlSim& operator=(const evotlSim&) = delete;
 
-    void initSimulation();
+    evotlSim(evotlSim&&) = default;
+    evotlSim& operator=(evotlSim&&) = default;
+
+    void initSimulation(const std::string& vehicleCsvPath);
     void startSimulation();
 
     void showAircraftTypes() const;
@@ -52,7 +50,7 @@ protected:
     std::vector<aircraftType> aircraftTypes;
 
     void generateFleet();
-    std::vector<aircraft> fleet;
+    std::vector<std::unique_ptr<aircraft>> fleet;
 
     void instantiateChargers();
     std::vector<charger> chargers;

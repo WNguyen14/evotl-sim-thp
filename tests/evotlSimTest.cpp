@@ -3,7 +3,7 @@
 //
 #include "gtest/gtest.h"
 #include "evotlSim.h" // Your main simulation header
-
+#include <memory>
 
 #ifndef VEHICLE_CSV_PATH
 #error "VEHICLE_CSV_PATH is not defined. Check your tests/CMakeLists.txt"
@@ -12,8 +12,8 @@
 class testableSimulation : public evotlSim {
 public:
     // Constructor that passes arguments to the base evotlSim constructor
-    testableSimulation(int numVehicles, int numChargers, int hours)
-        : evotlSim(numVehicles, numChargers, hours) {}
+    testableSimulation(int numVehicles, int numChargers, int hours, const std::string& vehicleCsvPath)
+        : evotlSim(numVehicles, numChargers, hours, vehicleCsvPath) {}
 
     void setup_initTypesFromCsv(const std::string& fileName) {
         initTypesFromCsv(fileName);
@@ -31,7 +31,7 @@ public:
     // Public backdoors to check the internal state of the simulation
     std::queue<aircraft*>& getAircraftQueue() { return aircraftQueue; }
     std::vector<charger>& getChargers() { return chargers; }
-    std::vector<aircraft>& getFleet() { return fleet; }
+    std::vector<std::unique_ptr<aircraft>>& getFleet() { return fleet; }
     std::vector<aircraftType>& getAircraftTypes() { return aircraftTypes; }
     const std::map<std::string, stats>& getFinalStats() const {
             return statisticsRecorder.getStatsMap(); // Assumes a getter in statisticsRecorder
@@ -44,9 +44,7 @@ protected:
 
     void SetUp() override {
         // Create a sim with specific, non-random conditions for testing
-        sim = new testableSimulation(1, 1, 1); // 1 vehicle, 1 charger
-        // We manually initialize to control the test environment
-        sim->initSimulation();
+        sim = new testableSimulation(1, 1, 1, VEHICLE_CSV_PATH); // 1 vehicle, 1 charger
         // We'll manually create the fleet to avoid randomness
     }
 
@@ -58,13 +56,12 @@ protected:
 TEST_F(evotlSimTest, QueueLogic_AircraftIsForcedToWaitWhenNoChargersAvailable) {
     // Arrange: Create a simulation with 1 aircraft but 0 chargers.
     delete sim; // Delete the default sim from SetUp
-    sim = new testableSimulation(1, 0, 1); // 1 vehicle, ZERO chargers
-    sim->initSimulation();
+    sim = new testableSimulation(1, 0, 1, VEHICLE_CSV_PATH); // 1 vehicle, ZERO chargers
 
     sim->getFleet().clear();
-    sim->getFleet().emplace_back(sim->getAircraftTypes()[0]);
+    sim->getFleet().push_back(std::make_unique<aircraft>(sim->getAircraftTypes()[0]));
 
-    aircraft* theAircraft = &sim->getFleet()[0];
+    aircraft* theAircraft = sim->getFleet()[0].get();
 
     // Set charge low enough to be depleted in one step
     theAircraft->setCharge(0.1);
@@ -81,9 +78,9 @@ TEST_F(evotlSimTest, QueueLogic_AircraftIsForcedToWaitWhenNoChargersAvailable) {
 TEST_F(evotlSimTest, FullCycle_DepletesAndImmediatelyChargesWithAvailableCharger) {
     // Arrange (This uses the default SetUp: 1 vehicle, 1 charger)
     sim->getFleet().clear();
-    sim->getFleet().emplace_back(sim->getAircraftTypes()[0]);
+    sim->getFleet().push_back(std::make_unique<aircraft>(sim->getAircraftTypes()[0]));
 
-    aircraft* theAircraft = &sim->getFleet()[0];
+    aircraft* theAircraft = sim->getFleet()[0].get();
 
     theAircraft->setCharge(0.1);
 
@@ -104,13 +101,12 @@ TEST_F(evotlSimTest, Statistics_VerifyEndToEndResultsForDeterministicScenario) {
     // Arrange
     // Overwrite the default sim with our specific "laboratory" conditions
     delete sim;
-    sim = new testableSimulation(1, 1, 3); // 1 vehicle, 1 charger, 3 hours
-    sim->initSimulation();
+    sim = new testableSimulation(1, 1, 3, VEHICLE_CSV_PATH); // 1 vehicle, 1 charger, 3 hours
 
     // Manually create a fleet with only one "Bravo" aircraft to ensure determinism
     sim->getFleet().clear();
     // Index 1 corresponds to Bravo Company in vehicles.csv
-    sim->getFleet().emplace_back(sim->getAircraftTypes()[1]);
+    sim->getFleet().push_back(std::make_unique<aircraft>(sim->getAircraftTypes()[1]));
 
     // Act
     // Run the entire simulation from start to finish. This tests the whole system.
