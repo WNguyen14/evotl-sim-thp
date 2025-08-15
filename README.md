@@ -12,26 +12,21 @@ This project is a discrete-time simulation of an eVTOL aircraft fleet, built in 
 
 ## Building the Project
 
-1.  **Clone the repository and navigate to the project directory.**
+1.  Clone the repository and navigate to the project directory.
 
-2.  **Create and enter a build directory:**
+2.  run run.bat in the project root
 
-    ```bash
-    mkdir build
-    cd build
-    ```
+3.  Run the simulation:
 
-3.  **Run CMake to configure the project.** This will also automatically fetch the Google Test dependency.
+```
+.\Debug\evotl-sim.exe ../vehicles.csv
+```
 
-    ```bash
-    cmake ..
-    ```
+4. Run the tests:
 
-4.  **Build the project using your chosen build tool.** On Linux/macOS with Make:
-    ```bash
-    make
-    ```
-    On Windows with Visual Studio, you would open the generated `.sln` file and build from there.
+```
+.\tests\Debug\run_tests.exe
+```
 
 ## Running the Application
 

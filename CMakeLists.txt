@@ -15,5 +15,7 @@ target_include_directories(evotl_lib PUBLIC include)
 add_executable(evotl-sim src/main.cpp)
 target_link_libraries(evotl-sim evotl_lib)
 
-enable_testing()
+# DELETE OR COMMENT OUT THIS LINE
+# enable_testing()
+
 add_subdirectory(tests)
