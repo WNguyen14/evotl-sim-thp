@@ -6,7 +6,7 @@
 #include "gtest/gtest.h"
 #include "aircraft.h"
 #include "aircraftType.hpp"
-
+#include <memory>
 // A Test Fixture allows us to reuse the same setup for multiple tests.
 class aircraftTest : public ::testing::Test {
 protected:
@@ -14,16 +14,15 @@ protected:
         // This runs before each test
         // Arrange: Create a predictable aircraft type and the aircraft itself.
         testType = aircraftType("Test Bravo", 100.0, 100.0, 0.2, 1.5, 5, 0.1);
-        testAircraft = new aircraft(testType);
+        testAircraft = std::make_unique<aircraft>(testType);
     }
 
     void TearDown() override {
         // Clean up
-        delete testAircraft;
     }
 
     aircraftType testType;
-    aircraft* testAircraft = nullptr;
+    std::unique_ptr<aircraft> testAircraft;
 };
 
 // TEST_F uses the fixture we defined above.

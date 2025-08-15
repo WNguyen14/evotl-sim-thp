@@ -14,7 +14,6 @@ set_target_properties(run_tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINA
 
 target_compile_definitions(run_tests
         PRIVATE
-        # This creates a C++ macro: #define VEHICLE_CSV_PATH "C:/Users/William/.../evotl-sim/vehicles.csv"
         VEHICLE_CSV_PATH="${CMAKE_SOURCE_DIR}/vehicles.csv"
 )
 
