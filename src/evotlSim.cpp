@@ -48,16 +48,11 @@ void evotlSim::startSimulation() {
 void evotlSim::runSimulation() {
 
     //TODO multi thread here maybe?
-    std::cout << "[DEBUG] Starting simulation loop..." << std::endl;
-
     //convert hours to seconds
     for (uint32_t i = 0; i < maxRunTime * 3600; i++) {
-        if (i % 1000 == 0) { // Print a message every 1000 steps
-            std::cout << "[DEBUG] Simulation step " << i << std::endl;
-        }
+
         handleStep(1);
     }
-    std::cout << "[DEBUG] Simulation loop FINISHED." << std::endl;
 
     //END ALL FLYING FLIGHTS
     for (const auto& aircraft : fleet) {
@@ -246,13 +241,14 @@ void evotlSim::initTypesFromCsv(const std::string& fileName) {
     std::string line;
     getline(file, line); // skip header
 
+    // maybe convert all units to smaller units -> hours to seconds for each one
     while (getline(file, line)) {
 
         std::stringstream ss(line);
         std:: string name;
-        float cruise, batt, charge, energy;
+        double cruise, batt, charge, energy;
         int passengers;
-        float fault;
+        double fault;
         char comma;
 
         getline(ss, name, ',');

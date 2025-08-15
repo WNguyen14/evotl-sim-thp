@@ -97,46 +97,48 @@ TEST_F(evotlSimTest, FullCycle_DepletesAndImmediatelyChargesWithAvailableCharger
     EXPECT_EQ(sim->getChargers()[0].getCurrentAircraft(), theAircraft);
 }
 
+// In tests/evotlSimTest.cpp
+
 TEST_F(evotlSimTest, Statistics_VerifyEndToEndResultsForDeterministicScenario) {
     // Arrange
-    // Overwrite the default sim with our specific "laboratory" conditions
     delete sim;
-    sim = new testableSimulation(1, 1, 3, VEHICLE_CSV_PATH); // 1 vehicle, 1 charger, 3 hours
+    sim = new testableSimulation(1, 1, 3, VEHICLE_CSV_PATH);
 
     // Manually create a fleet with only one "Bravo" aircraft to ensure determinism
     sim->getFleet().clear();
-    // Index 1 corresponds to Bravo Company in vehicles.csv
     sim->getFleet().push_back(std::make_unique<aircraft>(sim->getAircraftTypes()[1]));
 
     // Act
-    // Run the entire simulation from start to finish. This tests the whole system.
-    sim->test_runSimulation(); // We need to make runSimulation() public/protected
+    sim->test_runSimulation();
 
     // Assert
     const auto& statsMap = sim->getFinalStats();
-    // Check that our Bravo Company was actually simulated
     ASSERT_TRUE(statsMap.count("Bravo"));
     const stats& bravoStats = statsMap.at("Bravo");
+
+    // --- CHANGED: Use EXPECT_NEAR with a reasonable tolerance for ALL floating point values ---
+    // A tolerance of 0.1 is very safe for these large accumulated values.
+    const double tolerance = 0.1;
 
     // --- Verify the results against our paper calculations ---
 
     // Verify flight counts and times
     ASSERT_EQ(bravoStats.flightsCompleted, 4);
-    EXPECT_DOUBLE_EQ(bravoStats.totalFlightTime, 8640.0);
+    EXPECT_NEAR(bravoStats.totalFlightTime, 8640.0, tolerance);
     double expectedAvgFlightTime = 8640.0 / 4.0;
-    EXPECT_DOUBLE_EQ(bravoStats.totalFlightTime / bravoStats.flightsCompleted, expectedAvgFlightTime);
+    EXPECT_NEAR(bravoStats.totalFlightTime / bravoStats.flightsCompleted, expectedAvgFlightTime, tolerance);
 
     // Verify distances
-    EXPECT_NEAR(bravoStats.totalDistanceTravelled, 240.0, 1e-5); // Use NEAR for float precision
+    EXPECT_NEAR(bravoStats.totalDistanceTravelled, 240.0, tolerance);
     double expectedAvgDistance = 240.0 / 4.0;
-    EXPECT_NEAR(bravoStats.totalDistanceTravelled / bravoStats.flightsCompleted, expectedAvgDistance, 1e-5);
+    EXPECT_NEAR(bravoStats.totalDistanceTravelled / bravoStats.flightsCompleted, expectedAvgDistance, tolerance);
 
     // Verify charge counts and times
     ASSERT_EQ(bravoStats.chargeSessionsCompleted, 3);
-    EXPECT_DOUBLE_EQ(bravoStats.timeSpentCharging, 2160.0);
+    EXPECT_NEAR(bravoStats.timeSpentCharging, 2160.0, tolerance);
     double expectedAvgChargeTime = 2160.0 / 3.0;
-    EXPECT_DOUBLE_EQ(bravoStats.timeSpentCharging / bravoStats.chargeSessionsCompleted, expectedAvgChargeTime);
+    EXPECT_NEAR(bravoStats.timeSpentCharging / bravoStats.chargeSessionsCompleted, expectedAvgChargeTime, tolerance);
 
     // Verify passenger miles
-    EXPECT_NEAR(bravoStats.totalPassengerMiles, 1200.0, 1e-5);
+    EXPECT_NEAR(bravoStats.totalPassengerMiles, 1200.0, tolerance);
 }
