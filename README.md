@@ -19,13 +19,13 @@ This project is a discrete-time simulation of an eVTOL aircraft fleet, built in 
 3.  Run the simulation:
 
 ```
-.\Debug\evotl-sim.exe ../vehicles.csv
+.\build\Debug\evotl-sim.exe vehicles.csv
 ```
 
 4. Run the tests:
 
 ```
-.\tests\Debug\run_tests.exe
+.\build\tests\Debug\run_tests.exe
 ```
 
 ## Running the Application
