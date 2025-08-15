@@ -133,8 +133,10 @@ From within the `build` directory, run the following command:
 - CMAKE confusion
 - Thinking about responsibility and ownership of each class
 - Implementing testable class in a way that upholds OOP principles
+- CMAKE PAIN
 
 ## Future Work and Potential Improvements
 
 - Multithreading could improve performance for very large fleets
 - Flight profiles could be implemented to include different takeoff/landing/climbing phases
+- Refactor evotl -> eVTOL
