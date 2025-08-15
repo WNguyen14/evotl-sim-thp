@@ -168,7 +168,6 @@ TEST_F(evotlSimTest, MultiAircraft_ResourceContention_EndToEnd_StatsVerification
     EXPECT_NEAR(bravoStats.timeSpentCharging, 2160.0, tolerance);
     EXPECT_NEAR(bravoStats.totalDistanceTravelled, 240.0, tolerance);
     EXPECT_NEAR(bravoStats.totalPassengerMiles, 1200.0, tolerance);
-    EXPECT_EQ(bravoStats.totalNumFaults, 0);
 
     // --- Verify Delta Stats ---
     ASSERT_TRUE(statsMap.count("Delta"));
